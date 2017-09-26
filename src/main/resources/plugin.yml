@@ -1,0 +1,8 @@
+main: plugpuppy.Main
+version: 0.1
+name: PlugPuppy
+authors: [Rockhearted, HYPExMon5ter]
+commands:
+  pp:
+    description: 'Base command for PlugPuppy'
+    # add aliases to the command

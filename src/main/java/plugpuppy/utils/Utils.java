@@ -1,6 +1,9 @@
+package plugpuppy.utils;
+
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
+import org.bukkit.ChatColor;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -12,37 +15,24 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.logging.Logger;
 
-class Utils {
+import static plugpuppy.Variables.SPIGET_BASE_RESOURCES_URL;
+
+public class Utils {
 
     private static Gson gson = new Gson();
-    static Logger logger = Logger.getLogger("fool");
+    public static Logger logger = Logger.getLogger("fool");
 
-//    static final String url = "https://gist.github.com/akashaggarwal7/a4460b2093f775f0a2e0d3437f44ef9d";
 //    static final String url = "https://pastebin.com/raw/5Zey4qc7";
-    private static final String url = "https://gist.githubusercontent.com/akashaggarwal7/a4460b2093f775f0a2e0d3437f44ef9d/raw/6e4bc4718a7e9d5fd12db34cafea9a46c82bdf46/PluginID";
+//    private static final String url = "https://gist.githubusercontent.com/akashaggarwal7/a4460b2093f775f0a2e0d3437f44ef9d/raw/6e4bc4718a7e9d5fd12db34cafea9a46c82bdf46/PluginID";
+    private static final String url = "https://gist.githubusercontent.com/akashaggarwal7/a4460b2093f775f0a2e0d3437f44ef9d/raw/da47ee80ec4f1a4d92fe96052d0123d1af43b445/PluginID";
+    // move the json file to github from gist
 
-    static String getLatestVersion (String name) {
-
-        String latestVersion = null;
-        try {
-            String latestVersionInfo =
-                    readFrom("https://api.spiget.org/v2/resources/" + readResourceIDFromGist(name) + "/versions/latest");
-            Type type = new TypeToken<JsonObject>() {}.getType();
-            JsonObject object = gson.fromJson(latestVersionInfo, type);
-            latestVersion = object.get("name").getAsString();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return latestVersion;
-    }
-
-    static String getLatestVersion (int id) {
+    public static String getLatestVersion (String id) {
 
         String latestVersion = null;
         try {
             String latestVersionInfo =
-                    readFrom("https://api.spiget.org/v2/resources/" + id + "/versions/latest");
+                    readFrom(SPIGET_BASE_RESOURCES_URL + id + "/versions/latest");
             Type type = new TypeToken<JsonObject>() {}.getType();
             JsonObject object = gson.fromJson(latestVersionInfo, type);
             latestVersion = object.get("name").getAsString();
@@ -68,16 +58,17 @@ class Utils {
         }
     }
 
-    static int readResourceIDFromGist(String name) {
+    public static String readResourceIDFromGist(String name) {
         JsonObject data = null;
         try {
             data = read(url);
         } catch (IOException e) {
             e.printStackTrace();
         }
+//        Utils.logger.info(data.toString());
         if (data != null && data.get(name) != null)
-            return Integer.valueOf(data.get(name).toString().replace('"', ' ').trim());
-        return -1;
+            return String.valueOf(data.get(name).toString().replace('"', ' ').trim());
+        return null;
     }
 
     private static JsonObject read(String address) throws IOException {
@@ -86,4 +77,14 @@ class Utils {
             return new Gson().fromJson(reader, JsonObject.class);
         }
     }
+
+    public static String colorMsg(String msg) {
+        return ChatColor.translateAlternateColorCodes('&', msg);
+    }
+
+    public static String yellowMsg(String msg) { return colorMsg(ChatColor.YELLOW + msg); }
+
+    public static String blueMsg(String msg) { return colorMsg(ChatColor.BLUE + msg); }
+
+    public static String redMsg(String msg) { return colorMsg(ChatColor.RED + msg); }
 }
