@@ -15,17 +15,13 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.logging.Logger;
 
+import static plugpuppy.Variables.PLUGINS_RESOURCE_ID_URL;
 import static plugpuppy.Variables.SPIGET_BASE_RESOURCES_URL;
 
 public class Utils {
 
     private static Gson gson = new Gson();
-    public static Logger logger = Logger.getLogger("fool");
-
-//    static final String url = "https://pastebin.com/raw/5Zey4qc7";
-//    private static final String url = "https://gist.githubusercontent.com/akashaggarwal7/a4460b2093f775f0a2e0d3437f44ef9d/raw/6e4bc4718a7e9d5fd12db34cafea9a46c82bdf46/PluginID";
-    private static final String url = "https://gist.githubusercontent.com/akashaggarwal7/a4460b2093f775f0a2e0d3437f44ef9d/raw/da47ee80ec4f1a4d92fe96052d0123d1af43b445/PluginID";
-    // move the json file to github from gist
+    public static Logger logger = Logger.getLogger("foo");
 
     public static String getLatestVersion (String id) {
 
@@ -61,7 +57,7 @@ public class Utils {
     public static String readResourceIDFromGist(String name) {
         JsonObject data = null;
         try {
-            data = read(url);
+            data = read(PLUGINS_RESOURCE_ID_URL);
         } catch (IOException e) {
             e.printStackTrace();
         }
