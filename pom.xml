@@ -20,8 +20,7 @@
             <plugin>
                 <artifactId>maven-jar-plugin</artifactId>
                 <configuration>
-                    <outputDirectory>\Users\HYPExMon5ter\Documents\Minecraft Stuff\Servers\Testing Server\plugins</outputDirectory>
-                    <!--<outputDirectory>/Users/akashagarwal/Minecraft Server/CraftRoyale/plugins</outputDirectory>-->
+                    <outputDirectory>/Users/akashagarwal/Minecraft Server/CraftRoyale/plugins</outputDirectory>
                 </configuration>
             </plugin>
             <plugin>
