@@ -1,7 +1,7 @@
 main: plugpuppy.Main
 version: 0.1
 name: PlugPuppy
-authors: [Rockhearted, HYPExMon5ter]
+authors: [rockhearted, HYPExMon5ter]
 commands:
   pp:
     description: 'Base command for PlugPuppy'
