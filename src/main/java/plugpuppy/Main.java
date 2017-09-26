@@ -1,6 +1,7 @@
 package plugpuppy;
 
 import lombok.Getter;
+import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
@@ -23,6 +24,8 @@ public class Main extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        Metrics metrics = new Metrics(this);
+
         instance = this;
         serverPlugins = Arrays.asList(getServer().getPluginManager().getPlugins());
         registerCommands();
