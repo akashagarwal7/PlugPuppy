@@ -12,21 +12,21 @@ public class UtilsTest {
 
     @Test
     void readResourceIDFromGistTest() {
-        String id = Utils.readResourceIDFromGit("PowerNBT");
+        String id = Utils.readResourceIDFromGit(null, "PowerNBT");
         Utils.logger.info("ID: " + id);
         assertEquals( id, "9098" );
     }
 
     @Test
     void readVaultID() {
-        String id = Utils.readResourceIDFromGit("Vault");
+        String id = Utils.readResourceIDFromGit(null, "Vault");
         Utils.logger.info("ID: " + id);
         assertEquals( id, "41918" );
     }
 
     @Test
     void testLatestVersion() {
-        String latestVersion = Utils.getLatestVersion("PowerNBT");
+        String latestVersion = Utils.getLatestVersion(null, "PowerNBT");
         Utils.logger.info("Latest Version: " + latestVersion);
         assertEquals(latestVersion, "0.8.9.2");
     }

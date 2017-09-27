@@ -38,6 +38,11 @@ public interface Variables {
     String RELOAD_S = "Reload successful for plugin: %plugin%";
     String RELOAD_F = "Reload failed for plugin: %plugin%";
 
+    //Place holders
+
+    String PH_PLUGIN = "%plugin%";
+    String PH_ARG = "%arg%";
+
 
 
 

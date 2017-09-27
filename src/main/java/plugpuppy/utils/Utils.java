@@ -114,6 +114,8 @@ public class Utils {
         }
     }
 
+    public static String replaceAll(String msg, String regex, String value) { return msg.replaceAll(regex, value); }
+
     public static boolean isInteger(String s) {
         return isInteger(s,10);
     }

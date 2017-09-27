@@ -129,7 +129,7 @@ public class PluginUtil {
      * @param parallel Parallel download of plugin or not. Parallel may slow down the server depending upon the number
      *                 of plugins.
      */
-    public void updateAll(CommandSender sender, final boolean safe, boolean parallel) {
+    public void updateAll(final CommandSender sender, final boolean safe, boolean parallel) {
         if (!parallel) {
             Main.getInstance().getServer().getScheduler().runTaskLaterAsynchronously(Main.getInstance(), new Runnable() {
                 @Override
@@ -137,7 +137,7 @@ public class PluginUtil {
                     Iterator pluginIterator = pluginsWithAvailableUpdates.entrySet().iterator();
                     while (pluginIterator.hasNext()) {
                         Map.Entry entry = (Map.Entry) pluginIterator.next();
-                        if (!updateSingle(entry, safe))
+                        if (!updateSingle(sender, entry, safe))
                             failedUpates.put((String) entry.getKey(), ((PluginInfo) entry.getValue()));
                         pluginIterator.remove();
                     }
@@ -152,7 +152,7 @@ public class PluginUtil {
                 Main.getInstance().getServer().getScheduler().runTaskLaterAsynchronously(Main.getInstance(), new Runnable() {
                     @Override
                     public void run() {
-                        if (!updateSingle(entry, safe))
+                        if (!updateSingle(sender, entry, safe))
                             failedUpates.put((String) entry.getKey(), ((PluginInfo) entry.getValue()));
                         pluginIterator.remove();
                     }
@@ -168,7 +168,7 @@ public class PluginUtil {
         }
         String resourceID = pluginsWithAvailableUpdates.get(pluginName).getResourceID();
         String latestVersion = pluginsWithAvailableUpdates.get(pluginName).getLatestVersion();
-        updateSingle(pluginName, latestVersion, resourceID, true);
+        updateSingle(sender, pluginName, latestVersion, resourceID, true);
     }
 
     public void updateSingleWithPluginInfo(CommandSender sender, String pluginName, String resourceID) {
@@ -180,20 +180,20 @@ public class PluginUtil {
         //TODO Future task
         //if the resource is valid
         //add this resource to the public common resources json file, if it doesn't exist
-        updateSingle(pluginName, latestVersion, resourceID, true);
+        updateSingle(sender, pluginName, latestVersion, resourceID, true);
     }
 
-    public boolean updateSingle(Map.Entry entry, boolean safe) {
-        return updateSingle((String) entry.getKey(), ((PluginInfo) entry.getValue()).getLatestVersion(),
+    public boolean updateSingle(CommandSender sender, Map.Entry entry, boolean safe) {
+        return updateSingle(sender, (String) entry.getKey(), ((PluginInfo) entry.getValue()).getLatestVersion(),
                 ((PluginInfo) entry.getValue()).getResourceID(), safe);
     }
 
-    public boolean updateSingle(String pluginName, String latestVersion, String resourceID, boolean safe) {
+    public boolean updateSingle(CommandSender sender, String pluginName, String latestVersion, String resourceID, boolean safe) {
         Plugin plugin = Main.getInstance().getServer()
                 .getPluginManager().getPlugin(pluginName);
 
         if (!safe) {
-            unload(plugin);
+            unload(sender, plugin);
         }
 
         String folderPath = Main.getInstance().getDataFolder().getPath();
@@ -204,16 +204,16 @@ public class PluginUtil {
         //if overwrite in config is false
         //  if newPluginName == oldPluginName, append latestVersion with something
 
-        if (downloadPlugin(resourceID, folderPath, newPluginName)) {
-            deleteOld(plugin);
+        if (downloadPlugin(sender, resourceID, folderPath, newPluginName)) {
+            deleteOld(sender, plugin);
         } else {
             return false;
         }
 
-        setPluginUpdated(pluginName);
+//        setPluginUpdated(pluginName);
 
         if (!safe) {
-            loadPlugin(plugin, folderPath, newPluginName);
+            loadPlugin(sender, plugin, folderPath, newPluginName);
         } else {
             //send message for restart
         }
@@ -228,7 +228,7 @@ public class PluginUtil {
      * @param plugin The plugin that needs to be unloaded.
      */
 
-    private void unload(Plugin plugin) {
+    private void unload(CommandSender sender, Plugin plugin) {
 
         String name = plugin.getName();
 
@@ -326,14 +326,15 @@ public class PluginUtil {
         System.gc();
     }
 
-    boolean deleteOld(Plugin plugin) {
-        String path = getPluginPath(plugin);
+    boolean deleteOld(CommandSender sender, Plugin plugin) {
+        String path = getPluginPath(sender, plugin);
         return path != null && new File(path).delete();
     }
 
-    boolean downloadPlugin(String resourceID, String folderPath, String newPluginName) {
+    boolean downloadPlugin(CommandSender sender, String resourceID, String folderPath, String newPluginName) {
         HttpURLConnection httpConnection = null;
         try {
+
             URL downloadUrl = new URL(SPIGET_BASE_RESOURCES_URL + resourceID + "/download");
             httpConnection = (HttpURLConnection) downloadUrl.openConnection();
             httpConnection.setRequestProperty("User-Agent", "SpigetResourceUpdater");
@@ -377,7 +378,7 @@ public class PluginUtil {
         }
     }
 
-    void loadPlugin(Plugin plugin, String folderPath, String newPluginName) {
+    void loadPlugin(CommandSender sender, Plugin plugin, String folderPath, String newPluginName) {
         try {
             Bukkit.getPluginManager().loadPlugin(new File(folderPath + newPluginName));
         } catch (InvalidPluginException e) {
@@ -388,7 +389,7 @@ public class PluginUtil {
         Bukkit.getPluginManager().enablePlugin(plugin);
     }
 
-    private String getPluginPath(Plugin plugin) {
+    private String getPluginPath(CommandSender sender, Plugin plugin) {
         try {
             return plugin.getClass().getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
         } catch (URISyntaxException e) {

@@ -68,7 +68,9 @@ public class PP extends BaseCommand implements TabCompleter {
                             PluginUtil.getInstance().updateAll(sender);
                         } else if (strings.length == 3) {
                             if (strings[2].isEmpty()) {
-                                return false;
+                                //this probably means that /pp update all ' ', i.e. space character in the end
+                                PluginUtil.getInstance().updateAll(sender);
+                                return true;
                             }
                             String safe = strings[2];
                             if (safe.equalsIgnoreCase(SubCommands.UNSAFE.toString())) {
@@ -77,6 +79,7 @@ public class PP extends BaseCommand implements TabCompleter {
                                 PluginUtil.getInstance().updateAll(sender, false, true);
                             } else if (!safe.equalsIgnoreCase(SubCommands.SAFE.toString())) {
                                 //invalid argument
+                                Utils.iMsg(sender, Utils.redMsg(Utils.replaceAll(INVALID_ARGUMENT, PH_ARG, safe)));
                             }
                             PluginUtil.getInstance().updateAll(sender, true);
                         } else if (strings.length == 4) {
@@ -89,6 +92,7 @@ public class PP extends BaseCommand implements TabCompleter {
                                 return true;
                             } else if (!safe.equalsIgnoreCase(SubCommands.SAFE.toString())) {
                                 //invalid argument
+                                Utils.iMsg(sender, Utils.redMsg(Utils.replaceAll(INVALID_ARGUMENT, PH_ARG, safe)));
                             }
 
                             if (strings[3].isEmpty()) {
@@ -100,6 +104,7 @@ public class PP extends BaseCommand implements TabCompleter {
                                 parallelFlag = true;
                             }  else if(!parallel.equalsIgnoreCase(SubCommands.SEQUENTIAL.toString())) {
                                 //invalid argument
+                                Utils.iMsg(sender, Utils.redMsg(Utils.replaceAll(INVALID_ARGUMENT, PH_ARG, parallel)));
                             }
 
                             PluginUtil.getInstance().updateAll(sender, safeFlag, parallelFlag);
@@ -122,24 +127,29 @@ public class PP extends BaseCommand implements TabCompleter {
 
                     } else if (strings[1].equalsIgnoreCase("pluginWithInfo")) {
                         if (strings.length < 4) {
+                            Utils.iMsg(sender, Utils.redMsg(INSUFFICIENT_ARGUMENTS));
                             return false;
                         }
 
                         if (strings[2].isEmpty()) {
+                            Utils.iMsg(sender, Utils.redMsg(INSUFFICIENT_ARGUMENTS));
                             return false;
                         }
 
                         if (!Utils.isInteger(strings[3])) {
+                            Utils.iMsg(sender, Utils.redMsg(Utils.replaceAll(NOT_A_NUMBER, PH_PLUGIN, strings[3])));
                             return false;
                         }
 
                         PluginUtil.getInstance().updateSingleWithPluginInfo(sender, strings[2], strings[3]);
                     } else if (strings[1].equalsIgnoreCase("single")) {
                         if (strings.length < 3) {
+                            Utils.iMsg(sender, Utils.redMsg(INSUFFICIENT_ARGUMENTS));
                             return false;
                         }
 
                         if (strings[2].isEmpty()) {
+                            Utils.iMsg(sender, Utils.redMsg(INSUFFICIENT_ARGUMENTS));
                             return false;
                         }
 
