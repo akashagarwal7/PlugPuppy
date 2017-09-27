@@ -41,6 +41,8 @@ public class PluginUtil {
 
     private static PluginUtil instance = null;
 
+    private static char SLASH = '/';
+
     private PluginUtil() {}
 
     public static PluginUtil getInstance() {
@@ -178,7 +180,7 @@ public class PluginUtil {
         }
 
         String folderPath = Main.getInstance().getDataFolder().getPath();
-        folderPath = folderPath.substring(0, folderPath.lastIndexOf('/')) + "/";
+        folderPath = folderPath.substring(0, folderPath.lastIndexOf(SLASH)) + SLASH;
 
         String newPluginName = pluginName + "-" + latestVersion + ".jar";
         //TODO Future task
@@ -373,7 +375,7 @@ public class PluginUtil {
     }
 
     public static String getCurrentPluginFileName(String path) {
-        return path.substring(path.lastIndexOf('/') + 1, path.lastIndexOf('.'));
+        return path.substring(path.lastIndexOf(SLASH) + 1, path.lastIndexOf('.'));
     }
 
     boolean isPluginUpdated(String name) {
