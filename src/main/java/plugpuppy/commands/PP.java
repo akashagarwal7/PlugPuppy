@@ -30,18 +30,22 @@ public class PP extends BaseCommand implements TabCompleter {
     }
 
     public PP() {
-        list = new ArrayList<>();
         list.add(SubCommands.CHECK.toString());
         list.add(SubCommands.HELP.toString());
         list.add(SubCommands.UPDATE.toString());
 
-        update = new ArrayList<>(2);
         update.add(SubCommands.ALL.toString());
         update.add(SubCommands.ALL_EXCEPT.toString());
         update.add(SubCommands.LIST.toString());
         update.add(SubCommands.PLUGIN_WITH_INFO.toString());
         update.add(SubCommands.SINGLE.toString());
 
+        safe.add(SubCommands.SAFE.toString());
+        safe.add(SubCommands.UNSAFE.toString());
+        safe.add(SubCommands.YOLO.toString());
+
+        parallel.add(SubCommands.PARALLEL.toString());
+        parallel.add(SubCommands.SEQUENTIAL.toString());
     }
 
     @Override

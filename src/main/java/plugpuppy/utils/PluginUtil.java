@@ -33,6 +33,7 @@ public class PluginUtil {
     private Map<String, Boolean> updatedPlugins = new HashMap<>();
     @Getter
     private Map<String, PluginInfo> pluginsWithAvailableUpdates = new HashMap<String, PluginInfo>();
+    private Map<String, PluginInfo> failedUpates = new HashMap<String, PluginInfo>();
     @Getter
     private List<String> pluginNamesWithAvailableUpdates = new ArrayList<>();
     @Getter
@@ -133,13 +134,27 @@ public class PluginUtil {
                     Iterator pluginIterator = pluginsWithAvailableUpdates.entrySet().iterator();
                     while (pluginIterator.hasNext()) {
                         Map.Entry entry = (Map.Entry) pluginIterator.next();
-                        updateSingle(entry, safe);
+                        if (!updateSingle(entry, safe))
+                            failedUpates.put((String) entry.getKey(), ((PluginInfo) entry.getValue()));
+                        pluginIterator.remove();
                     }
                 }
             }, 20L);
         } else {
             //TODO Future task
             //code for parallel
+            final Iterator pluginIterator = pluginsWithAvailableUpdates.entrySet().iterator();
+            while (pluginIterator.hasNext()) {
+                final Map.Entry entry = (Map.Entry) pluginIterator.next();
+                Main.getInstance().getServer().getScheduler().runTaskLaterAsynchronously(Main.getInstance(), new Runnable() {
+                    @Override
+                    public void run() {
+                        if (!updateSingle(entry, safe))
+                            failedUpates.put((String) entry.getKey(), ((PluginInfo) entry.getValue()));
+                        pluginIterator.remove();
+                    }
+                }, 20L);
+            }
         }
     }
 
@@ -165,18 +180,17 @@ public class PluginUtil {
         updateSingle(pluginName, latestVersion, resourceID, true);
     }
 
-    public void updateSingle(Map.Entry entry, boolean safe) {
-        updateSingle((String) entry.getKey(), ((PluginInfo) entry.getValue()).getLatestVersion(),
+    public boolean updateSingle(Map.Entry entry, boolean safe) {
+        return updateSingle((String) entry.getKey(), ((PluginInfo) entry.getValue()).getLatestVersion(),
                 ((PluginInfo) entry.getValue()).getResourceID(), safe);
     }
 
-    public void updateSingle(String pluginName, String latestVersion, String resourceID, boolean safe) {
+    public boolean updateSingle(String pluginName, String latestVersion, String resourceID, boolean safe) {
         Plugin plugin = Main.getInstance().getServer()
                 .getPluginManager().getPlugin(pluginName);
 
         if (!safe) {
             unload(plugin);
-            deleteOld(plugin);
         }
 
         String folderPath = Main.getInstance().getDataFolder().getPath();
@@ -187,7 +201,11 @@ public class PluginUtil {
         //if overwrite in config is false
         //  if newPluginName == oldPluginName, append latestVersion with something
 
-        downloadPlugin(resourceID, folderPath, newPluginName);
+        if (downloadPlugin(resourceID, folderPath, newPluginName)) {
+            deleteOld(plugin);
+        } else {
+            return false;
+        }
 
         setPluginUpdated(pluginName);
 
@@ -196,7 +214,7 @@ public class PluginUtil {
         } else {
             //send message for restart
         }
-
+        return true;
     }
 
     /**
@@ -310,7 +328,7 @@ public class PluginUtil {
         return path != null && new File(path).delete();
     }
 
-    void downloadPlugin(String resourceID, String folderPath, String newPluginName) {
+    boolean downloadPlugin(String resourceID, String folderPath, String newPluginName) {
         HttpURLConnection httpConnection = null;
         try {
             URL downloadUrl = new URL(SPIGET_BASE_RESOURCES_URL + resourceID + "/download");
@@ -346,11 +364,13 @@ public class PluginUtil {
 
             bout.close();
             in.close();
-
+            return true;
         } catch (MalformedURLException mfe) {
             mfe.printStackTrace();
+            return false;
         } catch (IOException ioe) {
             ioe.printStackTrace();
+            return false;
         }
     }
 
@@ -383,7 +403,7 @@ public class PluginUtil {
     }
 
     void setPluginUpdated(String name) {
-        pluginsWithAvailableUpdates.remove(name);
-        pluginNamesWithAvailableUpdates.remove(name);
+//        pluginsWithAvailableUpdates.remove(name);
+//        pluginNamesWithAvailableUpdates.remove(name);
     }
 }
