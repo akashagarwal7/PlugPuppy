@@ -22,6 +22,11 @@ import java.util.List;
 
 import static plugpuppy.Variables.SPIGET_BASE_RESOURCES_URL;
 
+/**
+ * Credits to AutoUpdaterAPI for example code
+ * AutoUpdaterAPI - https://github.com/GamerKing195/AutoUpdaterAPI/
+ */
+
 public class PluginUtil {
 
     @Getter
@@ -35,6 +40,8 @@ public class PluginUtil {
     private volatile boolean alreadyChecking = false;
 
     private static PluginUtil instance = null;
+
+    private static char SLASH = '/';
 
     private PluginUtil() {}
 
@@ -70,7 +77,7 @@ public class PluginUtil {
                         e.printStackTrace();
                     }
                     String currentVersion = plugin.getDescription().getVersion();
-                    String resourceID = Utils.readResourceIDFromGist(plugin.getName());
+                    String resourceID = Utils.readResourceIDFromGit(plugin.getName());
                     if (resourceID == null) {
                         //resource ID doesn't not exist, do something about it
                         Bukkit.getConsoleSender().sendMessage(Utils.colorMsg("&cResource not found: " + plugin.getName()));
@@ -92,6 +99,23 @@ public class PluginUtil {
         }, 20L);
         alreadyChecking = false;
         return pluginsWithAvailableUpdates.size() > 0;
+    }
+
+    /**
+     * Defaults safe to true
+     * @param sender
+     */
+    public void updateAll(CommandSender sender) {
+        updateAll(sender, true, false);
+    }
+
+    /**
+     * Defaults parallel to false
+     * @param sender
+     * @param safe
+     */
+    public void updateAll(CommandSender sender, final boolean safe) {
+        updateAll(sender, safe, false);
     }
 
     /**
@@ -119,8 +143,22 @@ public class PluginUtil {
         }
     }
 
+    public void updateSingleWithPluginName(CommandSender sender, String pluginName) {
+        if (!pluginsWithAvailableUpdates.containsKey(pluginName)) {
+            Utils.sendResourceNotFoundMsg(sender);
+            return;
+        }
+        String resourceID = pluginsWithAvailableUpdates.get(pluginName).getResourceID();
+        String latestVersion = pluginsWithAvailableUpdates.get(pluginName).getLatestVersion();
+        updateSingle(pluginName, latestVersion, resourceID, true);
+    }
+
     public void updateSingleWithPluginInfo(CommandSender sender, String pluginName, String resourceID) {
         String latestVersion = Utils.getLatestVersion(resourceID);
+        if (latestVersion == null) {
+            Utils.sendResourceNotFoundMsg(sender);
+            return;
+        }
         //TODO Future task
         //if the resource is valid
         //add this resource to the public common resources json file, if it doesn't exist
@@ -142,7 +180,7 @@ public class PluginUtil {
         }
 
         String folderPath = Main.getInstance().getDataFolder().getPath();
-        folderPath = folderPath.substring(0, folderPath.lastIndexOf('/')) + "/";
+        folderPath = folderPath.substring(0, folderPath.lastIndexOf(SLASH)) + SLASH;
 
         String newPluginName = pluginName + "-" + latestVersion + ".jar";
         //TODO Future task
@@ -337,7 +375,7 @@ public class PluginUtil {
     }
 
     public static String getCurrentPluginFileName(String path) {
-        return path.substring(path.lastIndexOf('/') + 1, path.lastIndexOf('.'));
+        return path.substring(path.lastIndexOf(SLASH) + 1, path.lastIndexOf('.'));
     }
 
     boolean isPluginUpdated(String name) {

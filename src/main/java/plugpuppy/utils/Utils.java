@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 import org.bukkit.ChatColor;
+import org.bukkit.command.CommandSender;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -15,24 +16,19 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.logging.Logger;
 
-import static plugpuppy.Variables.SPIGET_BASE_RESOURCES_URL;
+import static plugpuppy.Variables.*;
 
 public class Utils {
 
     private static Gson gson = new Gson();
-    public static Logger logger = Logger.getLogger("fool");
+    public static Logger logger = Logger.getLogger("foo");
 
-//    static final String url = "https://pastebin.com/raw/5Zey4qc7";
-//    private static final String url = "https://gist.githubusercontent.com/akashaggarwal7/a4460b2093f775f0a2e0d3437f44ef9d/raw/6e4bc4718a7e9d5fd12db34cafea9a46c82bdf46/PluginID";
-    private static final String url = "https://gist.githubusercontent.com/akashaggarwal7/a4460b2093f775f0a2e0d3437f44ef9d/raw/da47ee80ec4f1a4d92fe96052d0123d1af43b445/PluginID";
-    // move the json file to github from gist
-
-    public static String getLatestVersion (String id) {
+    public static String getLatestVersion (String resourceID) {
 
         String latestVersion = null;
         try {
             String latestVersionInfo =
-                    readFrom(SPIGET_BASE_RESOURCES_URL + id + "/versions/latest");
+                    readFrom(SPIGET_BASE_RESOURCES_URL + resourceID + "/versions/latest");
             Type type = new TypeToken<JsonObject>() {}.getType();
             JsonObject object = gson.fromJson(latestVersionInfo, type);
             latestVersion = object.get("name").getAsString();
@@ -58,10 +54,10 @@ public class Utils {
         }
     }
 
-    public static String readResourceIDFromGist(String name) {
+    public static String readResourceIDFromGit(String name) {
         JsonObject data = null;
         try {
-            data = read(url);
+            data = read(PLUGINS_RESOURCE_ID_URL);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -87,4 +83,36 @@ public class Utils {
     public static String blueMsg(String msg) { return colorMsg(ChatColor.BLUE + msg); }
 
     public static String redMsg(String msg) { return colorMsg(ChatColor.RED + msg); }
+
+    public static void sendUpdateListEmptyMsg(CommandSender sender) {
+        sender.sendMessage(redMsg(NO_UPDATES_AVAILABLE));
+        sender.sendMessage(yellowMsg(PLUGINS_RESOURCE_ID_URL));
+        sender.sendMessage(yellowMsg(GENERAL_MSG1));
+        sender.sendMessage(yellowMsg(GENERAL_MSG2));
+        sender.sendMessage(yellowMsg(GENERAL_MSG3));
+    }
+
+    public static void sendResourceNotFoundMsg(CommandSender sender) {
+        sender.sendMessage(redMsg(RESOURCE_UNKNOWN));
+        sender.sendMessage(yellowMsg(PLUGINS_RESOURCE_ID_URL));
+        sender.sendMessage(yellowMsg(GENERAL_MSG1));
+        sender.sendMessage(yellowMsg(GENERAL_MSG2));
+        sender.sendMessage(yellowMsg(GENERAL_MSG3));
+    }
+
+    public static boolean isInteger(String s) {
+        return isInteger(s,10);
+    }
+
+    private static boolean isInteger(String s, int radix) {
+        if(s.isEmpty()) return false;
+        for(int i = 0; i < s.length(); i++) {
+            if(i == 0 && s.charAt(i) == '-') {
+                if(s.length() == 1) return false;
+                else continue;
+            }
+            if(Character.digit(s.charAt(i),radix) < 0) return false;
+        }
+        return true;
+    }
 }

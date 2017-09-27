@@ -12,14 +12,14 @@ public class UtilsTest {
 
     @Test
     void readResourceIDFromGistTest() {
-        String id = Utils.readResourceIDFromGist("PowerNBT");
+        String id = Utils.readResourceIDFromGit("PowerNBT");
         Utils.logger.info("ID: " + id);
         assertEquals( id, "9098" );
     }
 
     @Test
     void readVaultID() {
-        String id = Utils.readResourceIDFromGist("Vault");
+        String id = Utils.readResourceIDFromGit("Vault");
         Utils.logger.info("ID: " + id);
         assertEquals( id, "41918" );
     }
