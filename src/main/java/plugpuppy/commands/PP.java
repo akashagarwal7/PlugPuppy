@@ -58,7 +58,7 @@ public class PP extends BaseCommand implements TabCompleter {
         switch (strings.length) {
             case 1:
                 if (strings[0].equalsIgnoreCase("check")) {
-                    PluginUtil.getInstance().checkForUpdates();
+                    PluginUtil.getInstance().checkForUpdates(sender);
                 }
                 break;
             case 2:
@@ -165,7 +165,7 @@ public class PP extends BaseCommand implements TabCompleter {
                 if (strings[1].equalsIgnoreCase("single") || strings[1].equalsIgnoreCase("plugin")) {
                     if (!PluginUtil.getInstance().isUpdatesChecked()) {
                         // check updates
-                        PluginUtil.getInstance().checkForUpdates();
+                        PluginUtil.getInstance().checkForUpdates(commandSender);
                         commandSender.sendMessage(Utils.yellowMsg("Checking for updates.."));
                         return new ArrayList<>();
                     }
@@ -213,6 +213,6 @@ public class PP extends BaseCommand implements TabCompleter {
     }
 
     public String getPermission() {
-        return "base";
+        return "plugpuppy";
     }
 }

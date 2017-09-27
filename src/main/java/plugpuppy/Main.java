@@ -32,7 +32,7 @@ public class Main extends JavaPlugin {
         //TODO Future task
         //add autoCheckUpdates to config
         if (autoCheckUpdates)
-            PluginUtil.getInstance().checkForUpdates();
+            PluginUtil.getInstance().checkForUpdates(null);
 
         PluginDescriptionFile pdf = getDescription();
         Bukkit.getConsoleSender().sendMessage(Utils.colorMsg("&b&l" + pdf.getName() + " has been loaded (V." + pdf.getVersion() + ")"));

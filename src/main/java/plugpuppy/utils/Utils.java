@@ -3,6 +3,7 @@ package plugpuppy.utils;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
@@ -11,6 +12,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Type;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -23,24 +25,16 @@ public class Utils {
     private static Gson gson = new Gson();
     public static Logger logger = Logger.getLogger("foo");
 
-    public static String getLatestVersion (String resourceID) {
-
-        String latestVersion = null;
-        try {
-            String latestVersionInfo =
-                    readFrom(SPIGET_BASE_RESOURCES_URL + resourceID + "/versions/latest");
-            Type type = new TypeToken<JsonObject>() {}.getType();
-            JsonObject object = gson.fromJson(latestVersionInfo, type);
-            latestVersion = object.get("name").getAsString();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return latestVersion;
+    public static String getLatestVersion (CommandSender sender, String resourceID) {
+        String latestVersionInfo =
+                readFrom(sender, SPIGET_BASE_RESOURCES_URL + resourceID + "/versions/latest");
+        if (latestVersionInfo == null) return null;
+        Type type = new TypeToken<JsonObject>() {}.getType();
+        JsonObject object = gson.fromJson(latestVersionInfo, type);
+        return object.get("name").getAsString();
     }
 
-    private static String readFrom(String url) throws IOException {
-
+    private static String readFrom(CommandSender sender, String url){
         try (InputStream is = new URL(url).openStream()) {
             BufferedReader rd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
 
@@ -51,31 +45,41 @@ public class Utils {
             }
 
             return sb.toString();
-        }
-    }
-
-    public static String readResourceIDFromGit(String name) {
-        JsonObject data = null;
-        try {
-            data = read(PLUGINS_RESOURCE_ID_URL);
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
+        return null;
+    }
+
+    public static String readResourceIDFromGit(CommandSender sender, String name) {
+        JsonObject data = read(sender, PLUGINS_RESOURCE_ID_URL);
 //        Utils.logger.info(data.toString());
         if (data != null && data.get(name) != null)
             return String.valueOf(data.get(name).toString().replace('"', ' ').trim());
         return null;
     }
 
-    private static JsonObject read(String address) throws IOException {
-        URL url = new URL(address);
-        try (InputStream in = url.openStream(); InputStreamReader reader = new InputStreamReader(in, StandardCharsets.UTF_8)) {
+    private static JsonObject read(CommandSender sender, String address) {
+        try {
+            URL url = new URL(address);
+            InputStream in = url.openStream();
+            InputStreamReader reader = new InputStreamReader(in, StandardCharsets.UTF_8);
             return new Gson().fromJson(reader, JsonObject.class);
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+        return null;
     }
 
+    private static String addPluginPrefix(String msg) {return PLUGIN_PREFIX + msg;}
+
     public static String colorMsg(String msg) {
-        return ChatColor.translateAlternateColorCodes('&', msg);
+        return ChatColor.translateAlternateColorCodes('&', addPluginPrefix(msg));
     }
 
     public static String yellowMsg(String msg) { return colorMsg(ChatColor.YELLOW + msg); }
@@ -84,20 +88,30 @@ public class Utils {
 
     public static String redMsg(String msg) { return colorMsg(ChatColor.RED + msg); }
 
+    public static void exceptionMsg(CommandSender sender) {iMsg(sender, redMsg(EXCEPTION_CHECK_CONSOLE));}
+
     public static void sendUpdateListEmptyMsg(CommandSender sender) {
-        sender.sendMessage(redMsg(NO_UPDATES_AVAILABLE));
-        sender.sendMessage(yellowMsg(PLUGINS_RESOURCE_ID_URL));
-        sender.sendMessage(yellowMsg(GENERAL_MSG1));
-        sender.sendMessage(yellowMsg(GENERAL_MSG2));
-        sender.sendMessage(yellowMsg(GENERAL_MSG3));
+        iMsg(sender, redMsg(NO_UPDATES_AVAILABLE));
+        iMsg(sender, yellowMsg(PLUGINS_RESOURCE_ID_URL));
+        iMsg(sender, yellowMsg(GENERAL_MSG1));
+        iMsg(sender, yellowMsg(GENERAL_MSG2));
+        iMsg(sender, yellowMsg(GENERAL_MSG3));
     }
 
     public static void sendResourceNotFoundMsg(CommandSender sender) {
-        sender.sendMessage(redMsg(RESOURCE_UNKNOWN));
-        sender.sendMessage(yellowMsg(PLUGINS_RESOURCE_ID_URL));
-        sender.sendMessage(yellowMsg(GENERAL_MSG1));
-        sender.sendMessage(yellowMsg(GENERAL_MSG2));
-        sender.sendMessage(yellowMsg(GENERAL_MSG3));
+        iMsg(sender,redMsg(RESOURCE_UNKNOWN));
+        iMsg(sender, yellowMsg(PLUGINS_RESOURCE_ID_URL));
+        iMsg(sender, yellowMsg(GENERAL_MSG1));
+        iMsg(sender, yellowMsg(GENERAL_MSG2));
+        iMsg(sender, yellowMsg(GENERAL_MSG3));
+    }
+
+    public static void iMsg(CommandSender sender, String msg) {
+        if (sender != null) {
+            sender.sendMessage(msg);
+        } else {
+            Bukkit.getConsoleSender().sendMessage(msg);
+        }
     }
 
     public static boolean isInteger(String s) {

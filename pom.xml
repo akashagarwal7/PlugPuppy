@@ -108,7 +108,7 @@
                 </os>
             </activation>
             <properties>
-                <my.output.directory>/Users/akashagarwal/Minecraft Server/CraftRoyale/plugins</my.output.directory>
+                <my.output.directory>/Users/akashagarwal/Minecraft Server/SinglePluginTest/plugins</my.output.directory>
             </properties>
         </profile>
         <profile>

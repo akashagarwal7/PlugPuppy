@@ -55,7 +55,7 @@ public class PluginUtil {
         return instance;
     }
 
-    public boolean checkForUpdates() {
+    public boolean checkForUpdates(final CommandSender sender) {
         Main.getInstance().getServer().getScheduler().runTaskLaterAsynchronously(Main.getInstance(), new Runnable() {
             @Override
             public void run() {
@@ -78,14 +78,17 @@ public class PluginUtil {
                         e.printStackTrace();
                     }
                     String currentVersion = plugin.getDescription().getVersion();
-                    String resourceID = Utils.readResourceIDFromGit(plugin.getName());
+                    String resourceID = Utils.readResourceIDFromGit(sender, plugin.getName());
                     if (resourceID == null) {
                         //resource ID doesn't not exist, do something about it
                         Bukkit.getConsoleSender().sendMessage(Utils.colorMsg("&cResource not found: " + plugin.getName()));
                         continue;
                     }
 
-                    final String latestVersion = Utils.getLatestVersion(resourceID);
+                    final String latestVersion = Utils.getLatestVersion(sender, resourceID);
+                    if (latestVersion == null) {
+                        return;
+                    }
                     if (!currentVersion.equals(latestVersion)) {
                         Utils.logger.info(plugin.getName() + " is outdated.");
                         pluginsWithAvailableUpdates.put(plugin.getName(), new PluginInfo(resourceID, latestVersion));
@@ -169,7 +172,7 @@ public class PluginUtil {
     }
 
     public void updateSingleWithPluginInfo(CommandSender sender, String pluginName, String resourceID) {
-        String latestVersion = Utils.getLatestVersion(resourceID);
+        String latestVersion = Utils.getLatestVersion(sender, resourceID);
         if (latestVersion == null) {
             Utils.sendResourceNotFoundMsg(sender);
             return;

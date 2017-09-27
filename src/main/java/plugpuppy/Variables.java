@@ -15,4 +15,30 @@ public interface Variables {
     String GENERAL_MSG3 = "For example: "; //TODO insert PlugPuppy's example here
 
     String RESOURCE_UNKNOWN = "We do not know the resource for that plugin at this moment. Check the knowns here: ";
+
+    //Plugin prefix
+
+    String PLUGIN_PREFIX = "&r&7[&bPlugPuppy&7]&r";
+
+    //Error messages
+
+    String INSUFFICIENT_ARGUMENTS = "Insufficient arguments!";
+    String INVALID_ARGUMENT = "The argument %arg% is invalid!";
+    String EXCEPTION_CHECK_CONSOLE = "There was an error. Please check console.";
+    String NOT_A_NUMBER = "The argument %arg% is not a number!";
+
+    //Info messages
+
+    String CHECKING_UPDATES = "Checking for plugin updates..";
+    String DOWNLOAD_BEGIN = "Beginning download of plugin: %plugin%";
+    String DOWNLOAD_FINISH = "Finished download of plugin: %plugin%";
+
+    String UNLOADING_PLUGIN = "Unloading plugin: %plugin%";
+    String RELOADING_PLUGIN = "Reloading plugin: %plugin%";
+    String RELOAD_S = "Reload successful for plugin: %plugin%";
+    String RELOAD_F = "Reload failed for plugin: %plugin%";
+
+
+
+
 }
