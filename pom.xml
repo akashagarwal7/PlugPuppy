@@ -20,7 +20,7 @@
             <plugin>
                 <artifactId>maven-jar-plugin</artifactId>
                 <configuration>
-                    <outputDirectory>/Users/akashagarwal/Minecraft Server/CraftRoyale/plugins</outputDirectory>
+                    <outputDirectory>${my.output.directory}</outputDirectory>
                 </configuration>
             </plugin>
         </plugins>
@@ -61,5 +61,41 @@
         <skipTests>true</skipTests>
         <maven.test.skip>true</maven.test.skip>
     </properties>
+
+    <profiles>
+        <profile>
+            <id>1</id>
+            <!--developer- rockhearted-->
+            <activation>
+                <os>
+                    <family>os</family>
+                </os>
+            </activation>
+            <properties>
+                <my.output.directory>/Users/akashagarwal/Minecraft Server/CraftRoyale/plugins</my.output.directory>
+            </properties>
+        </profile>
+        <profile>
+            <id>2</id>
+            <!--developer- HYPExMon5ter-->
+            <activation>
+                <os>
+                    <family>window</family>
+                </os>
+            </activation>
+            <properties>
+                <my.output.directory>C:\Users\HYPExMon5ter\Documents\Minecraft Stuff\Servers\Testing Server\plugins</my.output.directory>
+            </properties>
+        </profile>
+        <profile>
+            <id>3</id>
+            <activation>
+                <property>
+                    <name>env</name>
+                    <value>dev</value>
+                </property>
+            </activation>
+        </profile>
+    </profiles>
 
 </project>
