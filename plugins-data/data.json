@@ -1,5 +1,21 @@
 //Resource IDs of plugins. Feel free to add your plugin to this list if it hasn't already been added.
 {
 "Vault":"41918",
-"PowerNBT":"9098"
+"PowerNBT":"9098",
+"ViaVersion":"19254",
+"ViaBackwards":"27448",
+"LuckPerms":"28140",
+"Skellett":"34361",
+"TuSKe":"25136",
+"ProtocolSupport":"7201",
+//"EssentialsX":"9089",
+"SkinsRestorer":"2124",
+"PAC":"6207",
+"ChatControl":"271",
+"TimeIsMoney":"12409",
+"ProtocolLib":"1997",
+"Factions":"1900",
+"AsyncWorldEdit":"327",
+"TitleManager":"1049",
+"ASkyBlock":"1220"
 }
