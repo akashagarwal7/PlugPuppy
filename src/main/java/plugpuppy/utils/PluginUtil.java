@@ -20,7 +20,7 @@ import plugpuppy.datastructures.PluginInfo;
 import java.io.*;
 import java.util.List;
 
-import static plugpuppy.Variables.SPIGET_BASE_RESOURCES_URL;
+import static plugpuppy.Variables.*;
 
 /**
  * Credits to AutoUpdaterAPI for example code
@@ -205,8 +205,18 @@ public class PluginUtil {
         //  if newPluginName == oldPluginName, append latestVersion with something
 
         if (downloadPlugin(sender, resourceID, folderPath, newPluginName)) {
-            deleteOld(sender, plugin);
+            Utils.iMsg(sender, Utils.blueMsg(Utils.replaceAll(
+                    DOWNLOAD_FINISH, PH_PLUGIN, newPluginName.substring(0, newPluginName.lastIndexOf('.')))));
+            if (!deleteOld(sender, plugin)) {
+                Utils.iMsg(sender, Utils.redMsg(Utils.replaceAll(
+                        DELETE_F, PH_PLUGIN, newPluginName.substring(0, newPluginName.lastIndexOf('.')))));
+            } else {
+                Utils.iMsg(sender, Utils.blueMsg(Utils.replaceAll(
+                        DELETE_S, PH_PLUGIN, newPluginName.substring(0, newPluginName.lastIndexOf('.')))));
+            }
         } else {
+            Utils.iMsg(sender, Utils.redMsg(Utils.replaceAll(
+                    DOWNLOAD_FAILED, PH_PLUGIN, newPluginName.substring(0, newPluginName.lastIndexOf('.')))));
             return false;
         }
 
@@ -231,6 +241,8 @@ public class PluginUtil {
     private void unload(CommandSender sender, Plugin plugin) {
 
         String name = plugin.getName();
+
+        Utils.iMsg(sender, Utils.yellowMsg(Utils.replaceAll(UNLOADING_PLUGIN, PH_PLUGIN, name)));
 
         PluginManager pluginManager = Bukkit.getPluginManager();
 
@@ -334,7 +346,8 @@ public class PluginUtil {
     boolean downloadPlugin(CommandSender sender, String resourceID, String folderPath, String newPluginName) {
         HttpURLConnection httpConnection = null;
         try {
-
+            Utils.iMsg(sender, Utils.yellowMsg(Utils.replaceAll(
+                    DOWNLOAD_BEGIN, PH_PLUGIN, newPluginName.substring(0, newPluginName.lastIndexOf('.')))));
             URL downloadUrl = new URL(SPIGET_BASE_RESOURCES_URL + resourceID + "/download");
             httpConnection = (HttpURLConnection) downloadUrl.openConnection();
             httpConnection.setRequestProperty("User-Agent", "SpigetResourceUpdater");
@@ -379,14 +392,18 @@ public class PluginUtil {
     }
 
     void loadPlugin(CommandSender sender, Plugin plugin, String folderPath, String newPluginName) {
+        Utils.iMsg(sender, Utils.yellowMsg(Utils.replaceAll(
+                RELOADING_PLUGIN, PH_PLUGIN, newPluginName.substring(0, newPluginName.lastIndexOf('.')))));
         try {
             Bukkit.getPluginManager().loadPlugin(new File(folderPath + newPluginName));
-        } catch (InvalidPluginException e) {
-            e.printStackTrace();
-        } catch (InvalidDescriptionException e) {
+            Bukkit.getPluginManager().enablePlugin(plugin);
+            Utils.iMsg(sender, Utils.blueMsg(Utils.replaceAll(
+                    RELOAD_S, PH_PLUGIN, newPluginName.substring(0, newPluginName.lastIndexOf('.')))));
+        } catch (Exception e) {
+            Utils.iMsg(sender, Utils.redMsg(Utils.replaceAll(
+                    RELOAD_F, PH_PLUGIN, newPluginName.substring(0, newPluginName.lastIndexOf('.')))));
             e.printStackTrace();
         }
-        Bukkit.getPluginManager().enablePlugin(plugin);
     }
 
     private String getPluginPath(CommandSender sender, Plugin plugin) {

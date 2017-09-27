@@ -30,10 +30,18 @@ public interface Variables {
     //Info messages
 
     String CHECKING_UPDATES = "Checking for plugin updates..";
+
     String DOWNLOAD_BEGIN = "Beginning download of plugin: %plugin%";
     String DOWNLOAD_FINISH = "Finished download of plugin: %plugin%";
+    String DOWNLOAD_FAILED = "Download failed of plugin: %plugin%";
+
+    String DELETE_S = "Deletion successful for outdated file of plugin: %plugin%";
+    String DELETE_F = "Deletion failed for outdated file of plugin: %plugin%";
 
     String UNLOADING_PLUGIN = "Unloading plugin: %plugin%";
+    String UNLOAD_S = "Unload successful for plugin: %plugin%";
+    String UNLOAD_F = "Unload failed for plugin: %plugin%";
+
     String RELOADING_PLUGIN = "Reloading plugin: %plugin%";
     String RELOAD_S = "Reload successful for plugin: %plugin%";
     String RELOAD_F = "Reload failed for plugin: %plugin%";
