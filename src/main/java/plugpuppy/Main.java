@@ -24,8 +24,9 @@ public class Main extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        Metrics metrics = new Metrics(this);
-
+        new Metrics(this);
+        if (System.getProperty("os.name").equalsIgnoreCase("windows"))
+            PluginUtil.getInstance().SLASH = '\\';
         instance = this;
         serverPlugins = Arrays.asList(getServer().getPluginManager().getPlugins());
         registerCommands();

@@ -18,10 +18,11 @@ public interface Variables {
 
     //Plugin prefix
 
-    String PLUGIN_PREFIX = "&r&7[&bPlugPuppy&7]&r";
+    String PLUGIN_PREFIX = "&r&7[&bPlugPuppy&7]&r ";
 
     //Error messages
 
+    String EXTRA_ARGUMENTS = "Extra arguments!";
     String INSUFFICIENT_ARGUMENTS = "Insufficient arguments!";
     String INVALID_ARGUMENT = "The argument %arg% is invalid!";
     String EXCEPTION_CHECK_CONSOLE = "There was an error. Please check console.";

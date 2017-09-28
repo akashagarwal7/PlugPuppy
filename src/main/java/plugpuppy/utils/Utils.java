@@ -131,4 +131,12 @@ public class Utils {
         }
         return true;
     }
+
+    public static boolean compareArgs(CommandSender sender, String[] strings, String... args) {
+//        if (strings.length != args.length) return false;
+        for (int i = 0; i < args.length; ++i) {
+            if (!args[i].equalsIgnoreCase(strings[i])) return false;
+        }
+        return true;
+    }
 }

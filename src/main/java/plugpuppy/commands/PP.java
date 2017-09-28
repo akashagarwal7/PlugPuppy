@@ -7,157 +7,142 @@ import plugpuppy.utils.PluginUtil;
 import plugpuppy.utils.Utils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class PP extends BaseCommand implements TabCompleter {
     private List<String> list = new ArrayList<>(3), update = new ArrayList<>(5),
-                        safe = new ArrayList<>(2), parallel = new ArrayList<>(2);
+            safe = new ArrayList<>(2), parallel = new ArrayList<>(2);
 
-    private enum SubCommands {
-        CHECK("check"), HELP("help"), UPDATE("update"), ALL("all"), ALL_EXCEPT("allExcept"), LIST("list"),
-        PLUGIN_WITH_INFO("pluginWithInfo"), SINGLE("single"), SAFE("safe"), UNSAFE("unsafe"), YOLO("yolo"),
-        PARALLEL("parallel"), SEQUENTIAL("sequential");
+    final String CHECK = ("check"), HELP = ("help"), UPDATE = ("update"), ALL = ("all"), ALL_EXCEPT = ("allExcept"),
+            LIST = ("list"), PLUGIN_WITH_INFO = ("pluginWithInfo"), SINGLE = ("single"), SAFE = ("safe"),
+            UNSAFE = ("unsafe"), YOLO = ("yolo"), PARALLEL = ("parallel"), SEQUENTIAL = ("sequential");
 
-        private String name;
-        SubCommands(String name) {
-            this.name = name;
-        }
-
-        @Override
-        public String toString() {
-            return name;
-        }
-    }
+    HashMap<String, Boolean> safeFlag = new HashMap<>(3);
+    HashMap<String, Boolean> parallelFlag = new HashMap<>(3);
 
     public PP() {
-        list.add(SubCommands.CHECK.toString());
-        list.add(SubCommands.HELP.toString());
-        list.add(SubCommands.UPDATE.toString());
+        list.add(CHECK);
+        list.add(HELP);
+        list.add(UPDATE);
 
-        update.add(SubCommands.ALL.toString());
-        update.add(SubCommands.ALL_EXCEPT.toString());
-        update.add(SubCommands.LIST.toString());
-        update.add(SubCommands.PLUGIN_WITH_INFO.toString());
-        update.add(SubCommands.SINGLE.toString());
+        update.add(ALL);
+        update.add(ALL_EXCEPT);
+        update.add(LIST);
+        update.add(PLUGIN_WITH_INFO);
+        update.add(SINGLE);
 
-        safe.add(SubCommands.SAFE.toString());
-        safe.add(SubCommands.UNSAFE.toString());
-        safe.add(SubCommands.YOLO.toString());
+        safe.add(SAFE);
+        safe.add(UNSAFE);
+        safe.add(YOLO);
 
-        parallel.add(SubCommands.PARALLEL.toString());
-        parallel.add(SubCommands.SEQUENTIAL.toString());
+        parallel.add(PARALLEL);
+        parallel.add(SEQUENTIAL);
+
+
+        safeFlag.put(SAFE, true);
+        safeFlag.put(UNSAFE, false);
+        safeFlag.put(YOLO, false);
+
+        parallelFlag.put(PARALLEL, false);
+        parallelFlag.put(SEQUENTIAL, true);
+        parallelFlag.put(YOLO, false);
     }
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String s, String[] strings) {
 
-        //switch, if-else here for different commands
+//        Utils.logger.info("Args length is: " + strings.length);
 
         if (!hasPermission(sender)) return false;
 
-        switch (strings.length) {
-            case 1:
-                if (strings[0].equalsIgnoreCase("check")) {
-                    PluginUtil.getInstance().checkForUpdates(sender);
-                }
-                break;
-            case 2:
-                if (strings[0].equalsIgnoreCase("update")) {
-                    if (strings[1].equalsIgnoreCase("all")) {
-                        if (strings.length == 2) {
-                            PluginUtil.getInstance().updateAll(sender);
-                        } else if (strings.length == 3) {
-                            if (strings[2].isEmpty()) {
-                                //this probably means that /pp update all ' ', i.e. space character in the end
-                                PluginUtil.getInstance().updateAll(sender);
-                                return true;
-                            }
-                            String safe = strings[2];
-                            if (safe.equalsIgnoreCase(SubCommands.UNSAFE.toString())) {
-                                PluginUtil.getInstance().updateAll(sender, false);
-                            } else if (safe.equalsIgnoreCase(SubCommands.YOLO.toString())) {
-                                PluginUtil.getInstance().updateAll(sender, false, true);
-                            } else if (!safe.equalsIgnoreCase(SubCommands.SAFE.toString())) {
-                                //invalid argument
-                                Utils.iMsg(sender, Utils.redMsg(Utils.replaceAll(INVALID_ARGUMENT, PH_ARG, safe)));
-                            }
-                            PluginUtil.getInstance().updateAll(sender, true);
-                        } else if (strings.length == 4) {
-                            boolean safeFlag = true, parallelFlag = false;
-                            String safe = strings[2], parallel = strings[3];
-                            if (safe.equalsIgnoreCase(SubCommands.UNSAFE.toString())) {
-                                safeFlag = false;
-                            } else if (safe.equalsIgnoreCase(SubCommands.YOLO.toString())) {
-                                PluginUtil.getInstance().updateAll(sender, false, true);
-                                return true;
-                            } else if (!safe.equalsIgnoreCase(SubCommands.SAFE.toString())) {
-                                //invalid argument
-                                Utils.iMsg(sender, Utils.redMsg(Utils.replaceAll(INVALID_ARGUMENT, PH_ARG, safe)));
-                            }
+        return test(sender, strings);
+    }
 
-                            if (strings[3].isEmpty()) {
-                                PluginUtil.getInstance().updateAll(sender, safeFlag);
-                                return true;
-                            }
+    boolean test(CommandSender sender, String[] strings) {
+        if (Utils.compareArgs(sender, strings, CHECK)) {
+            PluginUtil.getInstance().checkForUpdates(sender);
+            return true;
+        } else if (Utils.compareArgs(sender, strings, UPDATE, ALL)) {
+            if (strings.length == 2) {
+                PluginUtil.getInstance().updateAll(sender);
+            } else if (strings.length >= 3) {
 
-                            if (parallel.equalsIgnoreCase(SubCommands.PARALLEL.toString())) {
-                                parallelFlag = true;
-                            }  else if(!parallel.equalsIgnoreCase(SubCommands.SEQUENTIAL.toString())) {
-                                //invalid argument
-                                Utils.iMsg(sender, Utils.redMsg(Utils.replaceAll(INVALID_ARGUMENT, PH_ARG, parallel)));
-                            }
-
-                            PluginUtil.getInstance().updateAll(sender, safeFlag, parallelFlag);
-
-
-                        }
-                    } else if (strings[1].equalsIgnoreCase("allExcept")) {
-                        sender.sendMessage( Utils.yellowMsg("To be implemented!"));
-                    } else if (strings[1].equalsIgnoreCase("list")) {
-
-                        if (PluginUtil.getInstance().getPluginsWithAvailableUpdates().size() == 0) {
-                            Utils.sendUpdateListEmptyMsg(sender);
-                            return true;
-                        }
-
-                        sender.sendMessage(Utils.yellowMsg("Update list: "));
-                        for (String key : PluginUtil.getInstance().getPluginNamesWithAvailableUpdates()) {
-                            sender.sendMessage(key);
-                        }
-
-                    } else if (strings[1].equalsIgnoreCase("pluginWithInfo")) {
-                        if (strings.length < 4) {
-                            Utils.iMsg(sender, Utils.redMsg(INSUFFICIENT_ARGUMENTS));
-                            return false;
-                        }
-
-                        if (strings[2].isEmpty()) {
-                            Utils.iMsg(sender, Utils.redMsg(INSUFFICIENT_ARGUMENTS));
-                            return false;
-                        }
-
-                        if (!Utils.isInteger(strings[3])) {
-                            Utils.iMsg(sender, Utils.redMsg(Utils.replaceAll(NOT_A_NUMBER, PH_PLUGIN, strings[3])));
-                            return false;
-                        }
-
-                        PluginUtil.getInstance().updateSingleWithPluginInfo(sender, strings[2], strings[3]);
-                    } else if (strings[1].equalsIgnoreCase("single")) {
-                        if (strings.length < 3) {
-                            Utils.iMsg(sender, Utils.redMsg(INSUFFICIENT_ARGUMENTS));
-                            return false;
-                        }
-
-                        if (strings[2].isEmpty()) {
-                            Utils.iMsg(sender, Utils.redMsg(INSUFFICIENT_ARGUMENTS));
-                            return false;
-                        }
-
-                        PluginUtil.getInstance().updateSingleWithPluginName(sender, strings[2]);
+                if (!strings[2].isEmpty() && safeFlag.containsKey(strings[2].toLowerCase())) {
+                    if (strings[2].equalsIgnoreCase(YOLO)) {
+                        PluginUtil.getInstance().updateAll(sender, false, false);
+                        return true;
                     }
                 }
+                boolean safe, sequential = true;
+                if (safeFlag.get(strings[2].toLowerCase()) == null) {
+                    //invalid argument
+                    return false;
+                }
+                safe = safeFlag.get(strings[2].toLowerCase());
+
+                if (strings.length == 4 && !strings[3].isEmpty()) {
+                    if (safeFlag.get(strings[3].toLowerCase()) == null) {
+                        //invalid argument
+                        return false;
+                    }
+                    sequential = safeFlag.get(strings[3].toLowerCase());
+                }
+
+                PluginUtil.getInstance().updateAll(sender, safe, sequential);
+                return true;
+
+            }
+        } else if (Utils.compareArgs(sender, strings, UPDATE, ALL_EXCEPT)) {
+            sender.sendMessage( Utils.yellowMsg("To be implemented!"));
+            return true;
+        } else if (Utils.compareArgs(sender, strings, UPDATE, LIST)) {
+            if (PluginUtil.getInstance().getPluginsWithAvailableUpdates().size() == 0) {
+                Utils.sendUpdateListEmptyMsg(sender);
+                return true;
+            }
+
+            sender.sendMessage(Utils.yellowMsg("Update list: "));
+            for (String key : PluginUtil.getInstance().getPluginNamesWithAvailableUpdates()) {
+                sender.sendMessage(key);
+            }
+            return true;
+        } else if (Utils.compareArgs(sender, strings, UPDATE, PLUGIN_WITH_INFO)) {
+            if (strings.length < 4) {
+                Utils.iMsg(sender, Utils.redMsg(INSUFFICIENT_ARGUMENTS));
+                return false;
+            }
+
+            if (strings[2].isEmpty()) {
+                Utils.iMsg(sender, Utils.redMsg(INSUFFICIENT_ARGUMENTS));
+                return false;
+            }
+
+            if (!Utils.isInteger(strings[3])) {
+                Utils.iMsg(sender, Utils.redMsg(Utils.replaceAll(NOT_A_NUMBER, PH_PLUGIN, strings[3])));
+                return false;
+            }
+
+            PluginUtil.getInstance().updateSingleWithPluginInfo(sender, strings[2], strings[3]);
+            return true;
+        } else if (Utils.compareArgs(sender, strings, UPDATE, SINGLE)) {
+            if (strings.length < 3) {
+                Utils.iMsg(sender, Utils.redMsg(INSUFFICIENT_ARGUMENTS));
+                return false;
+            }
+
+            if (strings[2].isEmpty()) {
+                Utils.iMsg(sender, Utils.redMsg(INSUFFICIENT_ARGUMENTS));
+                return false;
+            }
+
+            PluginUtil.getInstance().updateSingleWithPluginName(sender, strings[2]);
+            return true;
+        } else if (Utils.compareArgs(sender, strings, HELP)) {
+            sender.sendMessage( Utils.yellowMsg("To be implemented!"));
+            return true;
         }
-        return true;
+         return true;
     }
 
     @Override
@@ -223,6 +208,6 @@ public class PP extends BaseCommand implements TabCompleter {
     }
 
     public String getPermission() {
-        return "plugpuppy";
+        return "base";
     }
 }

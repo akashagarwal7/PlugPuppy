@@ -42,7 +42,7 @@ public class PluginUtil {
 
     private static PluginUtil instance = null;
 
-    private static char SLASH = '/';
+    public static char SLASH = '/';
 
     private PluginUtil() {}
 
@@ -72,11 +72,11 @@ public class PluginUtil {
                 while (pluginIterator.hasNext()) {
                     Plugin plugin = pluginIterator.next();
                     Bukkit.getConsoleSender().sendMessage(Utils.colorMsg("&bChecking updates for: " + plugin.getName()));
-                    try {
-                        Utils.logger.info(plugin.getClass().getProtectionDomain().getCodeSource().getLocation().toURI().getPath());
-                    } catch (URISyntaxException e) {
-                        e.printStackTrace();
-                    }
+//                    try {
+//                        Utils.logger.info(plugin.getClass().getProtectionDomain().getCodeSource().getLocation().toURI().getPath());
+//                    } catch (URISyntaxException e) {
+//                        e.printStackTrace();
+//                    }
                     String currentVersion = plugin.getDescription().getVersion();
                     String resourceID = Utils.readResourceIDFromGit(sender, plugin.getName());
                     if (resourceID == null) {
@@ -110,7 +110,7 @@ public class PluginUtil {
      * @param sender
      */
     public void updateAll(CommandSender sender) {
-        updateAll(sender, true, false);
+        updateAll(sender, true, true);
     }
 
     /**
@@ -119,18 +119,18 @@ public class PluginUtil {
      * @param safe
      */
     public void updateAll(CommandSender sender, final boolean safe) {
-        updateAll(sender, safe, false);
+        updateAll(sender, safe, true);
     }
 
     /**
      * Update all the updatable plugins
      * @param sender Console or player who initiated the request
      * @param safe Type of update: download-only(safe), dynamic reload(unsafe)
-     * @param parallel Parallel download of plugin or not. Parallel may slow down the server depending upon the number
+     * @param sequential Parallel download of plugin or not. Parallel may slow down the server depending upon the number
      *                 of plugins.
      */
-    public void updateAll(final CommandSender sender, final boolean safe, boolean parallel) {
-        if (!parallel) {
+    public void updateAll(final CommandSender sender, final boolean safe, boolean sequential) {
+        if (sequential) {
             Main.getInstance().getServer().getScheduler().runTaskLaterAsynchronously(Main.getInstance(), new Runnable() {
                 @Override
                 public void run() {
