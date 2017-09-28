@@ -407,9 +407,6 @@ public class PluginUtil {
             bout.close();
             in.close();
             return true;
-        } catch (MalformedURLException mfe) {
-            mfe.printStackTrace();
-            return false;
         } catch (IOException ioe) {
             ioe.printStackTrace();
             return false;

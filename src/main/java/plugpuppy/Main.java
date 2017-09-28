@@ -34,9 +34,14 @@ public class Main extends JavaPlugin {
         //add autoCheckUpdates to config
         if (autoCheckUpdates)
             PluginUtil.getInstance().checkForUpdates(null);
-
+        Bukkit.getConsoleSender().sendMessage(getDataFolder().getPath());
         PluginDescriptionFile pdf = getDescription();
         Bukkit.getConsoleSender().sendMessage(Utils.colorMsg("&b&l" + pdf.getName() + " has been loaded (V." + pdf.getVersion() + ")"));
+    }
+
+    private boolean loadMap() {
+
+        return true;
     }
 
     void registerCommands() {
