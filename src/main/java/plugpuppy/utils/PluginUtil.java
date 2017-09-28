@@ -19,6 +19,8 @@ import plugpuppy.datastructures.PluginInfo;
 
 import java.io.*;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static plugpuppy.Variables.*;
 
@@ -33,7 +35,7 @@ public class PluginUtil {
     private Map<String, Boolean> updatedPlugins = new HashMap<>();
     @Getter
     private Map<String, PluginInfo> pluginsWithAvailableUpdates = new HashMap<String, PluginInfo>();
-    private Map<String, PluginInfo> failedUpates = new HashMap<String, PluginInfo>();
+    private Map<String, PluginInfo> failedUpdates = new HashMap<String, PluginInfo>();
     @Getter
     private List<String> pluginNamesWithAvailableUpdates = new ArrayList<>();
     @Getter
@@ -107,7 +109,6 @@ public class PluginUtil {
 
     /**
      * Defaults safe to true
-     * @param sender
      */
     public void updateAll(CommandSender sender) {
         updateAll(sender, true, true);
@@ -115,8 +116,6 @@ public class PluginUtil {
 
     /**
      * Defaults parallel to false
-     * @param sender
-     * @param safe
      */
     public void updateAll(CommandSender sender, final boolean safe) {
         updateAll(sender, safe, true);
@@ -138,7 +137,7 @@ public class PluginUtil {
                     while (pluginIterator.hasNext()) {
                         Map.Entry entry = (Map.Entry) pluginIterator.next();
                         if (!updateSingle(sender, entry, safe))
-                            failedUpates.put((String) entry.getKey(), ((PluginInfo) entry.getValue()));
+                            failedUpdates.put((String) entry.getKey(), ((PluginInfo) entry.getValue()));
                         pluginIterator.remove();
                     }
                 }
@@ -153,7 +152,7 @@ public class PluginUtil {
                     @Override
                     public void run() {
                         if (!updateSingle(sender, entry, safe))
-                            failedUpates.put((String) entry.getKey(), ((PluginInfo) entry.getValue()));
+                            failedUpdates.put((String) entry.getKey(), ((PluginInfo) entry.getValue()));
                         pluginIterator.remove();
                     }
                 }, 20L);
@@ -183,12 +182,12 @@ public class PluginUtil {
         updateSingle(sender, pluginName, latestVersion, resourceID, true);
     }
 
-    public boolean updateSingle(CommandSender sender, Map.Entry entry, boolean safe) {
+    private  boolean updateSingle(CommandSender sender, Map.Entry entry, boolean safe) {
         return updateSingle(sender, (String) entry.getKey(), ((PluginInfo) entry.getValue()).getLatestVersion(),
                 ((PluginInfo) entry.getValue()).getResourceID(), safe);
     }
 
-    public boolean updateSingle(CommandSender sender, String pluginName, String latestVersion, String resourceID, boolean safe) {
+    private boolean updateSingle(CommandSender sender, String pluginName, String latestVersion, String resourceID, boolean safe) {
         Plugin plugin = Main.getInstance().getServer()
                 .getPluginManager().getPlugin(pluginName);
 
@@ -223,7 +222,7 @@ public class PluginUtil {
 //        setPluginUpdated(pluginName);
 
         if (!safe) {
-            loadPlugin(sender, plugin, folderPath, newPluginName);
+            loadPlugin(sender, newPluginName);
         } else {
             //send message for restart
         }
@@ -231,18 +230,17 @@ public class PluginUtil {
     }
 
     /**
-     * Method is from PlugMan, developed by Ryan Clancy "rylinaux"
+     * Method from PlugMan, has been modified to suit plugPuppy's needs, developed by Ryan Clancy "rylinaux"
      *
      * PlugMan https://dev.bukkit.org/projects/plugman
      *
+     * Unload a plugin.
+     *
      * @param plugin The plugin that needs to be unloaded.
      */
-
-    private void unload(CommandSender sender, Plugin plugin) {
+    private static void unload(CommandSender sender, Plugin plugin) {
 
         String name = plugin.getName();
-
-        Utils.iMsg(sender, Utils.yellowMsg(Utils.replaceAll(UNLOADING_PLUGIN, PH_PLUGIN, name)));
 
         PluginManager pluginManager = Bukkit.getPluginManager();
 
@@ -287,10 +285,13 @@ public class PluginUtil {
                 commands = (Map<String, Command>) knownCommandsField.get(commandMap);
 
             } catch (NoSuchFieldException e) {
-                Main.getInstance().getServer().getConsoleSender().sendMessage(e.toString());
+                e.printStackTrace();
+                Utils.iMsg(sender, "unload.failed" + name);
             } catch (IllegalAccessException e) {
-                Main.getInstance().getServer().getConsoleSender().sendMessage(e.toString());
+                e.printStackTrace();
+                Utils.iMsg(sender, "unload.failed" + name);
             }
+
         }
 
         pluginManager.disablePlugin(plugin);
@@ -325,25 +326,49 @@ public class PluginUtil {
             }
         }
 
+        // Attempt to close the classloader to unlock any handles on the plugin's jar file.
         ClassLoader cl = plugin.getClass().getClassLoader();
 
         if (cl instanceof URLClassLoader) {
+
             try {
+
+                Field pluginField = cl.getClass().getDeclaredField("plugin");
+                pluginField.setAccessible(true);
+                pluginField.set(cl, null);
+
+                Field pluginInitField = cl.getClass().getDeclaredField("pluginInit");
+                pluginInitField.setAccessible(true);
+                pluginInitField.set(cl, null);
+
+            } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException ex) {
+                Logger.getLogger(PluginUtil.class.getName()).log(Level.SEVERE, null, ex);
+            }
+
+            try {
+
                 ((URLClassLoader) cl).close();
             } catch (IOException ex) {
-                ex.printStackTrace();
+                Logger.getLogger(PluginUtil.class.getName()).log(Level.SEVERE, null, ex);
             }
+
         }
 
+        // Will not work on processes started with the -XX:+DisableExplicitGC flag, but lets try it anyway.
+        // This tries to get around the issue where Windows refuses to unlock jar files that were previously loaded into the JVM.
         System.gc();
+
+        Utils.iMsg(sender, "unload.unloaded" + name);
+
     }
 
-    boolean deleteOld(CommandSender sender, Plugin plugin) {
+
+    private boolean deleteOld(CommandSender sender, Plugin plugin) {
         String path = getPluginPath(sender, plugin);
         return path != null && new File(path).delete();
     }
 
-    boolean downloadPlugin(CommandSender sender, String resourceID, String folderPath, String newPluginName) {
+    private boolean downloadPlugin(CommandSender sender, String resourceID, String folderPath, String newPluginName) {
         HttpURLConnection httpConnection = null;
         try {
             Utils.iMsg(sender, Utils.yellowMsg(Utils.replaceAll(
@@ -391,19 +416,63 @@ public class PluginUtil {
         }
     }
 
-    void loadPlugin(CommandSender sender, Plugin plugin, String folderPath, String newPluginName) {
-        Utils.iMsg(sender, Utils.yellowMsg(Utils.replaceAll(
-                RELOADING_PLUGIN, PH_PLUGIN, newPluginName.substring(0, newPluginName.lastIndexOf('.')))));
-        try {
-            Bukkit.getPluginManager().loadPlugin(new File(folderPath + newPluginName));
-            Bukkit.getPluginManager().enablePlugin(plugin);
-            Utils.iMsg(sender, Utils.blueMsg(Utils.replaceAll(
-                    RELOAD_S, PH_PLUGIN, newPluginName.substring(0, newPluginName.lastIndexOf('.')))));
-        } catch (Exception e) {
-            Utils.iMsg(sender, Utils.redMsg(Utils.replaceAll(
-                    RELOAD_F, PH_PLUGIN, newPluginName.substring(0, newPluginName.lastIndexOf('.')))));
-            e.printStackTrace();
+    /**
+     * Method from PlugMan, has been modified to suit plugPuppy's needs, developed by Ryan Clancy "rylinaux"
+     *
+     * PlugMan https://dev.bukkit.org/projects/plugman
+     *
+     * Load a plugin.
+     *
+     * @param name The name of plugin that needs to be loaded.
+     */
+    private static boolean loadPlugin(CommandSender sender, String name) {
+
+        Plugin target;
+
+        File pluginDir = new File("plugins");
+
+        if (!pluginDir.isDirectory()) {
+            Utils.iMsg(sender, "load.plugin-directory");
+            return false;
         }
+
+        File pluginFile = new File(pluginDir, name);
+
+        if (!pluginFile.isFile()) {
+            for (File f : pluginDir.listFiles()) {
+                if (f.getName().endsWith(".jar")) {
+                    try {
+                        PluginDescriptionFile desc = Main.getInstance().getPluginLoader().getPluginDescription(f);
+                        if (desc.getName().equalsIgnoreCase(name)) {
+                            pluginFile = f;
+                            break;
+                        }
+                    } catch (InvalidDescriptionException e) {
+                        Utils.iMsg(sender, "load.cannot-find");
+                        return false;
+                    }
+                }
+            }
+        }
+
+        try {
+            target = Bukkit.getPluginManager().loadPlugin(pluginFile);
+        } catch (InvalidDescriptionException e) {
+            e.printStackTrace();
+            Utils.iMsg(sender, "load.invalid-description");
+            return false;
+        } catch (InvalidPluginException e) {
+            e.printStackTrace();
+            Utils.iMsg(sender, "load.invalid-plugin");
+            return false;
+        }
+
+        target.onLoad();
+        Bukkit.getPluginManager().enablePlugin(target);
+
+        Utils.iMsg(sender, "load.loaded" + target.getName());
+
+        return true;
     }
 
     private String getPluginPath(CommandSender sender, Plugin plugin) {

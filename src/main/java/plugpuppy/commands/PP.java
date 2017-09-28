@@ -12,7 +12,7 @@ import java.util.List;
 
 public class PP extends BaseCommand implements TabCompleter {
     private List<String> list = new ArrayList<>(3), update = new ArrayList<>(5),
-            safe = new ArrayList<>(2), parallel = new ArrayList<>(2);
+            safe = new ArrayList<>(3), sequential = new ArrayList<>(2);
 
     final String CHECK = ("check"), HELP = ("help"), UPDATE = ("update"), ALL = ("all"), ALL_EXCEPT = ("allExcept"),
             LIST = ("list"), PLUGIN_WITH_INFO = ("pluginWithInfo"), SINGLE = ("single"), SAFE = ("safe"),
@@ -36,8 +36,8 @@ public class PP extends BaseCommand implements TabCompleter {
         safe.add(UNSAFE);
         safe.add(YOLO);
 
-        parallel.add(PARALLEL);
-        parallel.add(SEQUENTIAL);
+        sequential.add(PARALLEL);
+        sequential.add(SEQUENTIAL);
 
 
         safeFlag.put(SAFE, true);
@@ -157,22 +157,37 @@ public class PP extends BaseCommand implements TabCompleter {
                     return new ArrayList<>();
                 }
             case 3:
-                if (strings[1].equalsIgnoreCase("single") || strings[1].equalsIgnoreCase("plugin")) {
-                    if (!PluginUtil.getInstance().isUpdatesChecked()) {
-                        // check updates
-                        PluginUtil.getInstance().checkForUpdates(commandSender);
-                        commandSender.sendMessage(Utils.yellowMsg("Checking for updates.."));
+                if (strings[0].equalsIgnoreCase(UPDATE)) {
+                    if (strings[1].equalsIgnoreCase(ALL) || (strings[1].equalsIgnoreCase(ALL_EXCEPT))) {
+                        return createReturnList(safe, strings[2]);
+                    }
+                    else if (strings[1].equalsIgnoreCase("single") || strings[1].equalsIgnoreCase("plugin")) {
+                        if (!PluginUtil.getInstance().isUpdatesChecked()) {
+                            // check updates
+                            PluginUtil.getInstance().checkForUpdates(commandSender);
+                            commandSender.sendMessage(Utils.yellowMsg("Checking for updates.."));
+                            return new ArrayList<>();
+                        }
+                        if (PluginUtil.getInstance().getPluginsWithAvailableUpdates().size() == 0) {
+                            commandSender.sendMessage(Utils.yellowMsg("No updates available"));
+                            return new ArrayList<>();
+                        }
+                        return createReturnList(PluginUtil.getInstance().getPluginNamesWithAvailableUpdates(), strings[2]);
+                    } else {
                         return new ArrayList<>();
                     }
-                    if (PluginUtil.getInstance().getPluginsWithAvailableUpdates().size() == 0) {
-                        commandSender.sendMessage(Utils.yellowMsg("No updates available"));
-                        return new ArrayList<>();
+                }
+            case 4:
+                if (strings[0].equalsIgnoreCase(UPDATE)) {
+                    if (strings[1].equalsIgnoreCase(ALL) || (strings[1].equalsIgnoreCase(ALL_EXCEPT))) {
+                        if (!strings[2].equalsIgnoreCase(YOLO) && safeFlag.containsKey(strings[2].toLowerCase())) {
+                            return createReturnList(sequential, strings[3]);
+                        }
                     }
-                    return createReturnList(PluginUtil.getInstance().getPluginNamesWithAvailableUpdates(), strings[2]);
                 } else {
                     return new ArrayList<>();
                 }
-            case 4:
+            case 5:
                 return new ArrayList<>();
         }
 
