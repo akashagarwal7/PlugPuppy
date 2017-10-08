@@ -28,17 +28,9 @@ public abstract class BaseCommand implements CommandExecutor, Variables {
     public abstract String getPermission();
 
     public boolean hasPermission(CommandSender sender) {
-//        if (!(sender instanceof Player)) {
-////            sender.sendMessage(ChatWriter.pluginMessage("Only players should execute this command!"));
-//            return false;
-//        }
-
-        if (!sender.hasPermission("puppy." + this.getPermission())) {
-//            sender.sendMessage(ChatWriter
-//                    .pluginMessage(ChatColor.RED + "You don't have permission to execute this command!"));
+        if (!sender.hasPermission("plugpuppy." + this.getPermission())) {
             return false;
         }
-
         return true;
     }
 }

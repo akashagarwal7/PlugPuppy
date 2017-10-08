@@ -229,6 +229,53 @@ public class PluginUtil {
         return true;
     }
 
+    public boolean downloadSingle(CommandSender sender, String pluginName, String resourceID, boolean safe) {
+        String latestVersion = Utils.getLatestVersion(sender, resourceID);
+        Plugin plugin = Main.getInstance().getServer()
+                .getPluginManager().getPlugin(pluginName);
+
+        if (plugin != null) {
+            if (!safe) {
+                unload(sender, plugin);
+            }
+        }
+
+        String folderPath = Main.getInstance().getDataFolder().getPath();
+        folderPath = folderPath.substring(0, folderPath.lastIndexOf(SLASH)) + SLASH;
+
+        String newPluginName = pluginName + "-" + latestVersion + ".jar";
+        //TODO Future task
+        //if overwrite in config is false
+        //  if newPluginName == oldPluginName, append latestVersion with something
+
+        if (downloadPlugin(sender, resourceID, folderPath, newPluginName)) {
+            Utils.iMsg(sender, Utils.blueMsg(Utils.replaceAll(
+                    DOWNLOAD_FINISH, PH_PLUGIN, newPluginName.substring(0, newPluginName.lastIndexOf('.')))));
+            if (plugin != null) {
+                if (!deleteOld(sender, plugin)) {
+                    Utils.iMsg(sender, Utils.redMsg(Utils.replaceAll(
+                            DELETE_F, PH_PLUGIN, newPluginName.substring(0, newPluginName.lastIndexOf('.')))));
+                } else {
+                    Utils.iMsg(sender, Utils.blueMsg(Utils.replaceAll(
+                            DELETE_S, PH_PLUGIN, newPluginName.substring(0, newPluginName.lastIndexOf('.')))));
+                }
+            }
+        } else {
+            Utils.iMsg(sender, Utils.redMsg(Utils.replaceAll(
+                    DOWNLOAD_FAILED, PH_PLUGIN, newPluginName.substring(0, newPluginName.lastIndexOf('.')))));
+            return false;
+        }
+
+//        setPluginUpdated(pluginName);
+
+        if (!safe) {
+            loadPlugin(sender, newPluginName);
+        } else {
+            //send message for restart
+        }
+        return true;
+    }
+
     /**
      * Method from PlugMan, has been modified to suit plugPuppy's needs, developed by Ryan Clancy "rylinaux"
      *

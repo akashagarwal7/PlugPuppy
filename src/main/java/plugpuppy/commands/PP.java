@@ -11,10 +11,10 @@ import java.util.HashMap;
 import java.util.List;
 
 public class PP extends BaseCommand implements TabCompleter {
-    private List<String> list = new ArrayList<>(3), update = new ArrayList<>(5),
+    private List<String> list = new ArrayList<>(4), update = new ArrayList<>(5),
             safe = new ArrayList<>(3), sequential = new ArrayList<>(2);
 
-    final String CHECK = ("check"), HELP = ("help"), UPDATE = ("update"), ALL = ("all"), ALL_EXCEPT = ("allExcept"),
+    final String CHECK = ("check"), HELP = ("help"), UPDATE = ("update"), DOWNLOAD_SINGLE = ("downloadSingle"), ALL = ("all"), ALL_EXCEPT = ("allExcept"),
             LIST = ("list"), PLUGIN_WITH_INFO = ("pluginWithInfo"), SINGLE = ("single"), SAFE = ("safe"),
             UNSAFE = ("unsafe"), YOLO = ("yolo"), PARALLEL = ("parallel"), SEQUENTIAL = ("sequential");
 
@@ -25,6 +25,7 @@ public class PP extends BaseCommand implements TabCompleter {
         list.add(CHECK);
         list.add(HELP);
         list.add(UPDATE);
+        list.add(DOWNLOAD_SINGLE);
 
         update.add(ALL);
         update.add(ALL_EXCEPT);
@@ -138,6 +139,30 @@ public class PP extends BaseCommand implements TabCompleter {
 
             PluginUtil.getInstance().updateSingleWithPluginName(sender, strings[2]);
             return true;
+        } else if (Utils.compareArgs(sender, strings, DOWNLOAD_SINGLE)) {
+            if (strings.length < 4) {
+                Utils.iMsg(sender, Utils.redMsg(INSUFFICIENT_ARGUMENTS));
+                return false;
+            }
+
+            if (!safe.subList(0,2).contains(strings[1].toLowerCase())) {
+                Utils.iMsg(sender, Utils.redMsg(INSUFFICIENT_ARGUMENTS));
+                return false;
+            }
+
+            boolean safe = this.safeFlag.get(strings[1].toLowerCase());
+
+            if (strings[2].isEmpty()) {
+                Utils.iMsg(sender, Utils.redMsg(INSUFFICIENT_ARGUMENTS));
+                return false;
+            }
+
+            if (!Utils.isInteger(strings[3])) {
+                Utils.iMsg(sender, Utils.redMsg(Utils.replaceAll(NOT_A_NUMBER, PH_PLUGIN, strings[3])));
+                return false;
+            }
+            PluginUtil.getInstance().downloadSingle(sender, strings[2], strings[3], safe);
+            //TODO safe and usafe for this argument
         } else if (Utils.compareArgs(sender, strings, HELP)) {
             sender.sendMessage( Utils.yellowMsg("To be implemented!"));
             return true;
@@ -149,10 +174,12 @@ public class PP extends BaseCommand implements TabCompleter {
     public List<String> onTabComplete(CommandSender commandSender, Command command, String s, String[] strings) {
         switch (strings.length) {
             case 2:
-                if (strings[0].equalsIgnoreCase("check")) {
+                if (strings[0].equalsIgnoreCase(CHECK)) {
                     return new ArrayList<>();
-                } else if (strings[0].equalsIgnoreCase("update")) {
+                } else if (strings[0].equalsIgnoreCase(UPDATE)) {
                     return createReturnList(update, strings[1]);
+                } else if (strings[0].equalsIgnoreCase(DOWNLOAD_SINGLE)) {
+                    return createReturnList(safe.subList(0,2), strings[1]);
                 } else {
                     return new ArrayList<>();
                 }
@@ -161,7 +188,7 @@ public class PP extends BaseCommand implements TabCompleter {
                     if (strings[1].equalsIgnoreCase(ALL) || (strings[1].equalsIgnoreCase(ALL_EXCEPT))) {
                         return createReturnList(safe, strings[2]);
                     }
-                    else if (strings[1].equalsIgnoreCase("single") || strings[1].equalsIgnoreCase("plugin")) {
+                    else if (strings[1].equalsIgnoreCase(SINGLE) || strings[1].equalsIgnoreCase("plugin")) {
                         if (!PluginUtil.getInstance().isUpdatesChecked()) {
                             // check updates
                             PluginUtil.getInstance().checkForUpdates(commandSender);
